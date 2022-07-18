@@ -1,0 +1,139 @@
+{
+    "Vpc": {
+        "CidrBlock": "10.0.0.0/16",
+        "DhcpOptionsId": "dopt-0269f62247ad418cc",
+        "State": "pending",
+        "VpcId": "vpc-0da7bd914530a3577",
+        "OwnerId": "822518796727",
+        "InstanceTenancy": "default",
+        "Ipv6CidrBlockAssociationSet": [],
+        "CidrBlockAssociationSet": [
+            {
+                "AssociationId": "vpc-cidr-assoc-005f6555ca9e8ccf4",
+                "CidrBlock": "10.0.0.0/16",
+                "CidrBlockState": {
+                    "State": "associated"
+                }
+            }
+        ],
+        "IsDefault": false,
+        "Tags": [
+            {
+                "Key": "Name",
+                "Value": "vpc1"
+            }
+        ]
+    }
+}
+
+
+{
+    "Subnet": {
+        "AvailabilityZone": "ap-southeast-1a",
+        "AvailabilityZoneId": "apse1-az1",
+        "AvailableIpAddressCount": 251,
+        "CidrBlock": "10.0.1.0/24",
+        "DefaultForAz": false,
+        "MapPublicIpOnLaunch": false,
+        "State": "available",
+        "SubnetId": "subnet-0ee799957bb41075a",
+        "VpcId": "vpc-0da7bd914530a3577",
+        "OwnerId": "822518796727",
+        "AssignIpv6AddressOnCreation": false,
+        "Ipv6CidrBlockAssociationSet": [],
+        "Tags": [
+            {
+                "Key": "Name",
+                "Value": "web1"
+            }
+        ],
+        "SubnetArn": "arn:aws:ec2:ap-southeast-1:822518796727:subnet/subnet-0ee799957bb41075a"
+    }
+}
+
+{
+    "Subnet": {
+        "AvailabilityZone": "ap-southeast-1a",
+        "AvailabilityZoneId": "apse1-az1",
+        "AvailableIpAddressCount": 251,
+        "CidrBlock": "10.0.2.0/24",
+        "DefaultForAz": false,
+        "MapPublicIpOnLaunch": false,
+        "State": "available",
+        "SubnetId": "subnet-0e022f40c55ce7f3d",
+        "VpcId": "vpc-0da7bd914530a3577",
+        "OwnerId": "822518796727",
+        "AssignIpv6AddressOnCreation": false,
+        "Ipv6CidrBlockAssociationSet": [],
+        "Tags": [
+            {
+                "Key": "Name",
+                "Value": "db1"
+            }
+        ],
+        "SubnetArn": "arn:aws:ec2:ap-southeast-1:822518796727:subnet/subnet-0e022f40c55ce7f3d"
+    }
+}
+
+{
+    "Subnet": {
+        "AvailabilityZone": "ap-southeast-1b",
+        "AvailabilityZoneId": "apse1-az2",
+        "AvailableIpAddressCount": 251,
+        "CidrBlock": "10.0.3.0/24",
+        "DefaultForAz": false,
+        "MapPublicIpOnLaunch": false,
+        "State": "available",
+        "SubnetId": "subnet-09b4e7c16507696fb",
+        "VpcId": "vpc-0da7bd914530a3577",
+        "OwnerId": "822518796727",
+        "AssignIpv6AddressOnCreation": false,
+        "Ipv6CidrBlockAssociationSet": [],
+        "Tags": [
+            {
+                "Key": "Name",
+                "Value": "web2"
+            }
+        ],
+        "SubnetArn": "arn:aws:ec2:ap-southeast-1:822518796727:subnet/subnet-09b4e7c16507696fb"
+    }
+}
+
+{
+    "Subnet": {
+        "AvailabilityZone": "ap-southeast-1b",
+        "AvailabilityZoneId": "apse1-az2",
+        "AvailableIpAddressCount": 251,
+        "CidrBlock": "10.0.4.0/24",
+        "DefaultForAz": false,
+        "MapPublicIpOnLaunch": false,
+        "State": "available",
+        "SubnetId": "subnet-0119ba5cab083c344",
+        "VpcId": "vpc-0da7bd914530a3577",
+        "OwnerId": "822518796727",
+        "AssignIpv6AddressOnCreation": false,
+        "Ipv6CidrBlockAssociationSet": [],
+        "Tags": [
+            {
+                "Key": "Name",
+                "Value": "db2"
+            }
+        ],
+        "SubnetArn": "arn:aws:ec2:ap-southeast-1:822518796727:subnet/subnet-0119ba5cab083c344"
+    }
+}
+{
+    "InternetGateway": {
+        "Attachments": [],
+        "InternetGatewayId": "igw-079c5b2599907ca43",
+        "OwnerId": "822518796727",
+        "Tags": [
+            {
+                "Key": "Name",
+                "Value": "task1_vpc1_igw"
+            }
+        ]
+    }
+}
+
+

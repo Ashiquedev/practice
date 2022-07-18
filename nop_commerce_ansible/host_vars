@@ -1,0 +1,9 @@
+    - microsoft_deb_package_url: https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
+    - proxy_pass_sites_available: /etc/nginx/sites-available/default
+    - proxy_pass_sites_enabled: /etc/nginx/sites-enabled/default
+    - nopcommerce450_directory_path: "{ nopc_home }/nopCommerce450"
+    - nopc_home: /var/www
+    - nopc_url: https://github.com/nopSolutions/nopCommerce/releases/download/release-4.50.2/nopCommerce_4.50.2_NoSource_linux_x64.zip
+    - nopc_owner: www-data
+    - nopc_group: www-data
+    - nopCommerce450_service_path: /etc/systemd/system/nopCommerce450.service

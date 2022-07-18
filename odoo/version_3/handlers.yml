@@ -1,0 +1,6 @@
+---
+- name: Restart odoo15
+  service:
+      name: odoo15
+      state: restarted
+      daemon_reload: yes

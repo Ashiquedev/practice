@@ -1,0 +1,43 @@
+---
+- name: installing sprut commerce
+  hosts: all
+  become: yes
+  vars:
+    - sprutcommerce_source_download_url: https://github.com/Ashiquedev/sprutcommercezip.git
+  tasks:
+    - name: ansible create spurtcommerce directory example
+      ansible.builtin.file:
+        path: /spurtcommerce
+        state: directory
+        group: devops
+        owner: devops
+        recurse: yes
+    - name: Clone a repo with separate git directory
+      ansible.builtin.git:
+        repo: "{{ sprutcommerce_source_download_url }}"
+        dest: /spurtcommerce/
+        recursive: yes
+        accept_hostkey: yes
+        key_file: /home/devops/.ssh/id_rsa
+        depth: 1
+        clone: yes  
+    - name: installing unzip
+      ansible.builtin.package:
+        name: [ "unzip" ]
+        update_cache: yes
+        state: present
+    - name: unzip the file
+      ansible.builtin.unarchive:
+        src: /spurtcommerce/Spurtcommerce_3.0.2_community_LTS.zip
+        dest: /home/devops/
+        remote_src: yes
+        group: devops
+        owner: devops
+        mode: 0750
+
+
+    
+    
+      
+
+    

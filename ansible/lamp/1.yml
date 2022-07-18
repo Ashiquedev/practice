@@ -1,0 +1,84 @@
+---
+- name: install openjdk 11 java on ubuntu 20.04
+  hosts: all
+  vars:
+    - user_name: "tomcat"
+    - group_name: "tomcat"
+    - home_dir: /opt/tomcat
+    - shell: /bin/false
+    - tomcat_version: 9.0.60
+    - tomcat_file_in_homedir: /opt/tomcat/apache-tomcat-9.0.60
+  become: yes
+  tasks:
+    - name: install openjdk 11
+      ansible.builtin.apt:       #u can use simply _apt_ also here
+        name: openjdk-11-jdk
+        update_cache: yes
+        state: present
+    - name: create a group
+      ansible.builtin.group:
+        name: "{{ group_name }}"
+        state: present
+    - name: create a user
+      ansible.builtin.user:
+        name: "{{ user_name }}"
+        group: "{{ group_name }}"
+        create_home: yes
+        shell: "{{ shell }}"
+        home: "{{ home_dir }}"
+        state: present
+    - name: downloading tomcat
+      ansible.builtin.get_url:
+        url: "https://dlcdn.apache.org/tomcat/tomcat-9/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
+        dest: /tmp
+        group: "{{ group_name }}"
+        owner: "{{ user_name }}"
+    - name: extract file and copt to /opt/tomcat
+      ansible.builtin.unarchive:
+        dest: /opt/tomcat/
+        src: /tmp/apache-tomcat-{{ tomcat_version }}.tar.gz
+        group: "{{ group_name }}"
+        owner: "{{ user_name }}"
+        remote_src: yes
+        creates: /opt/tomcat/apache-tomcat-{{ tomcat_version }}
+    - name: creating symbolic link
+      ansible.builtin.file:
+        src: "{{ tomcat_file_in_homedir }}"
+        state: link
+        dest: "{{ home_dir }}/latest"
+        group: "{{ group_name }}"
+        owner: "{{ user_name }}"
+    - name:  Change the directory ownership
+      ansible.builtin.file:
+        group: "{{ group_name }}"
+        owner: "{{ user_name }}"
+        path: "{{ home_dir }}"
+         recurse: yes
+    - name: finding .sh in /opt/tomcat/latest/bin
+      ansible.builtin.find:
+        paths: /opt/tomcat/latest/bin
+        patterns: "*.sh"
+      register: sh_files
+    - name: print the .sh files
+      ansible.builtin.debug:
+        var: sh_files
+    - name: Make shell scripts executable
+      ansible.builtin.file:
+        path: '{{ item.path }}'
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+        mode: '0755'
+        state: file
+      loop: "{{ sh_files.files }}"
+    - name: tomcat.service file copy to dest
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/
+        src: /home/devops/ansible/practice/tomcat/tomcat.service
+        owner: "{{ user_name }}"
+        group: "{{ user_name }}"
+    - name: deamon reload enable start
+       systemd:
+        daemon_reload: yes
+        enabled: yes
+        name: tomcat.service
+        state: started

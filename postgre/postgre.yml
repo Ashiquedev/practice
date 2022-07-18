@@ -1,0 +1,41 @@
+---
+- name: installing postgresql
+  hosts: all
+  become: yes
+  tasks:
+    - name: installing postgresql
+      ansible.builtin.apt:
+        name: [ "postgresql" ]  
+        state: present
+    - name: "Install Python packages"
+      pip: "name={{ item }}  state=present"
+      with_items:
+        - psycopg2-binary
+    - name: giving the password for postgres
+      community.postgresql.postgresql_user:
+        login_host: localhost
+        login_password: ""
+        login_user: "postgres"
+        name:  "postgres"
+        password: "Ashik"
+        port: 5432
+        state: present
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        postgresql-client
+
+
+        postgresql - object-relational SQL database (supported version)
+postgresql-12 - object-relational SQL database, version 12 server
+
+postgresql-server-dev-12 - development files for PostgreSQL 12 server-side programming
+postgresql-server-dev-all - extension build tool for multiple PostgreSQL versions
+ -

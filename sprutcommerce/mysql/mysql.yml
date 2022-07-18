@@ -1,0 +1,88 @@
+---
+- name: installing mysql
+  hosts: all
+  become: yes
+  vars:
+    - mysql_packages: [ "mysql-server" , "python3-pymysql"]
+    - mysql_conf_template_name: 'mysqldconf.j2'
+    - mysql_conf_template_destination_path: "/etc/mysql/mysql.conf.d/mysqld.cnf"
+    - mysql_command_check_authentication_of_rootuser: mysql -Nse "select count(*) from mysql.user where user = 'root' and authentication_string is null"
+    - mysql_command_to set_rootuser_plugin: mysql -Nse 'UPDATE mysql.user SET plugin="mysql_native_password" WHERE user="root" AND host="localhost"'
+    - mysql_command_to_flush_privilages: mysql -u root -e 'FLUSH PRIVILEGES'
+    - database_user_name: testuser
+    - database_user_password: testuser@123
+    - database_name: spurtcommerce
+    - root_user_password: root@123
+    - insert_sql_file_location: 
+  tasks:
+    - name: installing mysql packages   
+      ansible.builtin.package:
+        name: "{{ mysql_packages }}"  
+        state: present
+    - name: Make sure a mysql service unit is running        
+      ansible.builtin.systemd:
+        state: started
+        name: mysql
+        enabled: yes 
+    - name: changing the binding address
+      ansible.builtin.template:
+          src: "{{ mysql_conf_template_name }}"
+          dest: "{{ mysql_conf_template_destination_path }}"
+          remote_src: yes
+      notify:
+         - Restart mysql
+    - name: check the plugin of root
+      ansible.builtin.shell:
+        cmd: "{{ mysql_command_check_authentication_of_rootuser }}" 
+      ignore_errors: yes
+      register: root_password
+    - name: print rootpassword
+      ansible.builtin.debug:
+        var: root_password.stdout
+    - name: Change the authentication plugin of MySQL root user to mysql_native_password
+      ansible.builtin.shell:
+        cmd: "{{ item }}"
+      loop:
+        - "{{ mysql_command_to set_rootuser_plugin }}"
+        - "{{ mysql_command_to_flush_privilages }}"
+      ignore_errors: yes
+      when:
+        root_password.stdout == "0" 
+      notify:
+        - Restart mysql
+    - name: Set MySQL root Password
+      community.mysql.mysql_user:
+        login_host: 'localhost'
+        login_user: 'root'
+        login_password: ''
+        name: 'root'
+        password: "{{ root_user_password }}"
+        state: present
+      when:
+        root_password.stdout == "0"   
+    - name: Create database user with password and all database privileges and 'WITH GRANT OPTION'     
+      community.mysql.mysql_user:
+        name: "{{ database_user_name }}"
+        password: "{{ database_user_password }}"
+        host: "%"
+        plugin: "mysql_native_password"
+        priv: '*.*:ALL,GRANT'
+        state: present
+        login_host: 'localhost'
+        login_user: 'root'
+        login_password: "{{ root_user_password }}" 
+    - name: Create a new database with name 'spurtcommerce'
+      community.mysql.mysql_db:
+        name: "{{ database_name }}"
+        state: present
+    - name: Restore database
+      community.mysql.mysql_db:
+        name: "{{ database_name }}"
+        state: import
+        target: "{{ insert_sql_file_location }}"
+  handlers:
+    - name: Restart mysql
+      ansible.builtin.systemd:
+          name: mysql
+          state: restarted
+          daemon_reload: yes

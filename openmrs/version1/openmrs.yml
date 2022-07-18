@@ -1,0 +1,143 @@
+---
+- name: openmrs installation
+  hosts: all
+  become: yes
+  vars:
+    - actual_bind: 'bind-address            = 127.0.0.1'
+    - replace_bind: 'bind-address            = 0.0.0.0'
+  tasks:
+    - name: sudo useradd -m -d /opt/tomcat -U -s /bin/false tomcat
+      ansible.builtin.user:
+        name: tomcat
+        shell: /bin/false
+        home: /opt/tomcat
+        state: present
+    - name: installing openjdk-8
+      ansible.builtin.apt:
+        name: openjdk-8-jdk
+        update_cache: yes
+        state: present
+    - name: downloading tomcat archive
+      ansible.builtin.get_url:
+        dest: /tmp/apache-tomcat-8.5.78.tar.gz
+        mode: 0644
+        url: https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.78/bin/apache-tomcat-8.5.78.tar.gz
+    - name: extract the archive
+      ansible.builtin.unarchive:
+        dest:/opt/tomcat/ 
+        mode: 0750
+        owner: tomcat
+        group: tomcat
+        remote_src: yes
+        src: /tmp/apache-tomcat-8.5.78.tar.gz
+    - name: grant tomcat ownership over the extracted installation
+      ansible.builtin.file:
+        path: /opt/tomcat/bin
+        owner: tomcat
+        group: tomcat
+        mode: '0754'
+    - name: Configuring Admin Users of tomcat
+      ansible.builtin.template:
+          src: 'tomcat-users.j2'
+          dest: "/opt/tomcat/conf/tomcat-users.xml"
+      notify:
+        - Restart tomcat
+      - name: remove the restriction for the Manager page
+        ansible.builtin.replace:
+          path: /opt/tomcat/webapps/manager/META-INF/context.xml
+          before: '# <Valve'
+          regexp: '<--'
+          replace: '<!--'
+        notify:
+          - Restart tomcat
+      - name: remove the restriction for the host Manager page
+        ansible.builtin.replace:
+          path: /opt/tomcat/webapps/host-manager/META-INF/context.xml
+          before: '# <Valve'
+          regexp: '<--'
+          replace: '<!--'
+        notify:
+          - Restart tomcat
+    - name: tomcat service
+      ansible.builtin.template:
+          src: 'tomcat_service.j2'
+          dest: "/etc/systemd/system/tomcat.service"
+      notify:
+        - Restart tomcat
+    - name: Make sure a tomcat service unit is running
+      ansible.builtin.systemd:
+        state: started
+        name: tomcat
+        enabled: yes
+        daemon_reload: yes
+    #=========================================
+    - name: create a directory for OpenMRS and set proper ownership 
+      ansible.builtin.file:
+        group: tomcat
+        owner: tomcat
+        path: /var/lib/OpenMRS
+        recurse: yes
+    - name: downloading tomcat archive
+      ansible.builtin.get_url:
+        dest: /var/lib/OpenMRS/
+        #mode: 0644
+        url: https://sourceforge.net/projects/openmrs/files/releases/OpenMRS_Platform_2.5.0/openmrs.war
+    - name: copy the downloaded file to the Tomcat webapps directory
+      ansible.builtin.copy:
+        src: /var/lib/OpenMRS/openmrs.war
+        dest: /opt/tomcat/webapps/openmrs.war
+        group: tomcat
+        owner: tomcat
+        remote_src: yes
+    #====================================
+    - name: installing mysql packages
+      hosts: web
+      ansible.builtin.package:
+        name: [ "mysql-client" , "PyMySQL" ]
+        state: present
+    - name: Make sure a mysql service unit is running
+      hosts: web
+      ansible.builtin.systemd:
+        state: started
+        name: mysql
+        enabled: yes   
+   - name: editing bind address
+     hosts: web
+     ansible.builtin.replace:
+        path: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regexp: "{ actual_bind }"
+        replace: "{ replace_bind }"
+      notify:
+        - Restart mysql
+   - name: installing mysql packages
+     hosts: db
+     ansible.builtin.package:
+        name: [ "mysql-server" , "PyMySQL" ]  
+        state: present 
+   - name: Create database user with password and all database privileges and 'WITH GRANT OPTION'
+     hosts: db
+     community.mysql.mysql_user:
+       name: tomcat
+       password: 12345
+       priv: '*.*:ALL,GRANT'
+       state: present
+   - name: Set MySQL root Password
+     mysql_user:
+       login_host: 'localhost'
+       login_user: 'root'
+       login_password: ''
+       name: 'root'
+       password: 'Ashik@1431'
+       state: present
+  handlers:
+    - name: Restart tomcat
+      service:
+          name: tomcat
+          state: restarted
+          daemon_reload: yes
+    - name: Restart mysql
+      service:
+          name: mysql
+          state: restarted
+          daemon_reload: yes
+

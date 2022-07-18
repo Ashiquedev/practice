@@ -1,0 +1,41 @@
+---
+- name: Create a nopCommerce450 directory 
+  ansible.builtin.file:
+    path: "{ nopcommerce450_directory_path }"
+    state: directory
+    mode: '0755'
+- name: Create a directory 
+  ansible.builtin.file:
+    path: "{ nopc_home }/{ item }"
+    state: directory
+    mode: '0755'
+    loop:
+      - bin
+      - logs
+- name: Install unzip
+  ansible.builtin.package:
+    name: unzip
+    state: present
+- name: Unarchive a file that needs to be downloaded (added in 2.0)
+  ansible.builtin.unarchive:
+    src: "{ nopc_url }" 
+    dest: "{ nopcommerce450_directory_path }"
+    remote_src: yes
+    creates: "{ nopcommerce450_directory_path }"/nopCommerce_4.50.2_NoSource_linux_x64
+    owner: www-data
+    group: www-data
+    mode: '0755'
+- name: Change file ownership, group and permissions
+  ansible.builtin.file:
+    path: "{ nopcommerce450_directory_path }"/
+    owner: "{ nopc_owner }"
+    group: "{ nopc_group }"
+    mode: '0755'
+    recurse: yes
+- name: configure nginx as a reverse proxy to forward requests to your ASP.NET Core app
+  ansible.builtin.template:
+    src: 'nopCommerce450_service.j2'
+    dest: "{ nopCommerce450_service_path }"
+    mode: 0644
+  notify:
+      - Restart nopCommerce450

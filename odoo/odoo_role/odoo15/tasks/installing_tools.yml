@@ -1,0 +1,8 @@
+---
+- name: installing_tools_req_to_build
+  ansible.builtin.package:
+    name:  "{{ installing_tools_req_to_build }}"
+    update_cache: yes
+    state: present
+  loop:
+  - "{{ installing_tools_req_to_build }}"

@@ -1,0 +1,36 @@
+---
+- name: installing angularjs
+  hosts: all
+  become: yes
+  vars:
+    - service_name: "apache2"
+    - enable_packages_for_sprutcommerce: [ "proxy","proxy_http","headers","proxy_balancer","lbmethod_byrequests" ]  
+    - proxy_conf_template_name: proxy.j2
+    - proxy_conf_dest_path: /etc/apache2/sites-available/000-default.conf
+  tasks:
+    - name: install apache2
+      ansible.builtin.package:
+        name: "{{ service_name }}"
+        state: present
+        update_cache: yes
+    - name: Enable the Apache2 module wsgi
+      community.general.apache2_module:
+        state: present
+        name: "{{ enable_packages_for_sprutcommerce }}"
+      notify:
+        - Restart apache2
+    - name: proxy configuration
+      ansible.builtin.template:
+        src: "{{ proxy_conf_template_name }}"
+        dest: "{{ proxy_conf_dest_path }}"
+        remote_src: yes
+      notify:
+        - Restart apache2   
+  handlers:
+    - name: Restart apache2
+      ansible.builtin.systemd:
+          name: "{{ service_name }}"
+          state: restarted
+          daemon_reload: yes
+
+    - 

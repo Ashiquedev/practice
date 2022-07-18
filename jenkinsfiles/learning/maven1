@@ -1,0 +1,81 @@
+
+scripted pipeline:
+
+git branch: 'main', changelog: false, url: 'https://github.com/Ashiquedev/spring-petclinic.git'
+sh  script: 'mvn clean package'
+junit healthScaleFactor: 8.0, testResults: '/target/sure-fire/*.xml'
+archiveArtifacts artifacts: 'target/*.jar', followSymlinks: false
+
+
+1. clone the code
+2. maven complile test package 
+3. artifacts
+4. mvn install
+5. sonarqube
+6. jfrog artifactory
+
+node('jdk11') {
+    stage('clone the git repo') {
+        git branch: 'main', changelog: false, url: 'https://github.com/Ashiquedev/spring-petclinic.git'
+    }    
+    stage('maven works') {
+        sh  script: 'mvn clean package'
+    }
+     stage('test results') {
+        junit  testResults: '**/surefire-reports/*.xml'
+    }
+    stage('artifacts') {
+        archiveArtifacts artifacts: '**/*.jar', followSymlinks: false
+    }
+}
+
+
+
+
+
+
+
+==============================================================================================
+
+2. declarative pipeline
+
+
+
+a) agent:   on which node it is working
+
+
+pipeline{
+    agent {
+         label 'jdk11'
+          }
+    options { 
+        
+        timeout(time: 1, unit: 'HOURS')
+    }
+    stages{
+        stage('clone the git repo'){
+            steps{
+                 git branch: 'main', changelog: false, url: 'https://github.com/Ashiquedev/spring-petclinic.git'
+            }
+        }
+        stage("build & SonarQube analysis") {
+            steps {
+              withSonarQubeEnv('My_SonarQube_Server') {
+                sh 'mvn clean test package sonar:sonar'
+              }
+            }
+          }
+          stage("Quality Gate") {
+            steps {
+              timeout(time: 5, unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: true
+              }
+            }
+          }
+    }
+    
+}
+
+
+http://3.12.76.46:8080/env-vars.html/
+            

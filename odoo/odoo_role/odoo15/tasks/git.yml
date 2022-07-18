@@ -1,0 +1,11 @@
+---
+- name: Clone the Odoo 15 source code from GitHub
+  become_user: "{{ user_name }}"
+  become: yes
+  ansible.builtin.git:
+    clone: yes
+    depth: 1
+    dest: "{{ odoo_git_repo_destination_dir }}"
+    recursive: yes
+    repo: "{{ odoo_git_repo_url }}"
+    version: "{{ odoo_version }}"

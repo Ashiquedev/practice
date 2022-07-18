@@ -1,0 +1,23 @@
+#manual steps
+
+
+#sudo apt update
+#sudo apt install nodejs
+
+
+
+
+---
+- name: install nodejs java on ubuntu 20.04
+  hosts: all
+  become: yes
+  tasks:
+    - name: install nodejs
+      ansible.builtin.apt:       #u can use simply _apt_ also here
+         name: nodejs
+         update_cache: yes
+         state: present
+
+# ansible-playbook -i hosts install-openjdk11-javaonubuntu.yml --syntax-check
+# ansible-playbook -i hosts install-openjdk11-javaonubuntu.yml 
+# run these in bash

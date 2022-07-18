@@ -1,0 +1,20 @@
+---
+- name: Create a directory if it does not exist
+  become_user: "{{ user_name }}"
+  become: yes
+  ansible.builtin.file:
+    path: "{{ odoo_custom_addons_path }}"
+    state: directory
+    mode: '0755'
+- name: Create a configuration file odoo.conf
+  ansible.builtin.template:
+    dest: "{{ odoo_configuration_template_destination_path }}"
+    src: "{{ odoo_configuration_template_name }}"
+  notify:
+     - Restart odoo15
+- name: Create a odoo service file 
+  ansible.builtin.template:
+    dest: "{{ odoo_service_template_destination_path }}"
+    src: "{{ odoo_service_template_name }}"
+  notify:
+     - Restart odoo15

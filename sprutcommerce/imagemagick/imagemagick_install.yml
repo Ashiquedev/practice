@@ -1,0 +1,11 @@
+---
+- name: installing imagemagick commerce
+  hosts: all
+  become: yes
+  vars:
+    - package_name_of_imagemagick: imagemagick
+  tasks:
+    - name: Imagemagick Installation
+      ansible.builtin.package:
+        name: "{{ package_name_of_imagemagick }}"
+        update_cache: yes

@@ -1,0 +1,9 @@
+ProxyRequests off
+<Proxy *>
+Order deny,allow
+Allow from all
+</Proxy>
+
+<Location /backend>
+ProxyPass http://127.0.0.1:<API-PORT> ProxyPassReverse http://127.0.0.1:<API-PORT>
+</Location>

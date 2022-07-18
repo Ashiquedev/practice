@@ -1,0 +1,16 @@
+[Unit]
+Description=Odoo15
+Requires=postgresql.service
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+SyslogIdentifier=odoo15
+PermissionsStartOnly=true
+User={{ user_name }}
+Group={{ group_name }}
+ExecStart=/opt/odoo15/venvs/odoo-venv/bin/python3 /opt/odoo15/odoo/odoo-bin -c /etc/odoo15.conf
+StandardOutput=journal+console
+
+[Install]
+WantedBy=multi-user.target

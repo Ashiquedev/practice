@@ -1,0 +1,61 @@
+#manual steps
+#sudo yum update
+#sudo yum install nodejs
+
+#manual steps for ubuntu
+#sudo apt update
+#sudo apt-get install openjdk-11-jdk
+
+
+#========================================================================
+
+#''''''
+#devops@ip-172-31-30-128:/home/ubuntu/ansible/playbook$ ansible  -i hosts all -m ansible.builtin.setup
+
+#devops@ip-172-31-30-128:/home/ubuntu/ansible/playbook$ ansible  -i hosts all -m ansible.builtin.setup | grep  -i "distribution"
+#       "ansible_distribution": "RedHat",
+#       "ansible_distribution_file_parsed": true,
+#        "ansible_distribution_file_path": "/etc/redhat-release",
+#        "ansible_distribution_file_search_string": "Red Hat",
+#        "ansible_distribution_file_variety": "RedHat",
+#        "ansible_distribution_major_version": "8",
+#        "ansible_distribution_release": "Ootpa",
+#        "ansible_distribution_version": "8.5",
+#        "ansible_distribution": "Ubuntu",
+#        "ansible_distribution_file_parsed": true,
+#        "ansible_distribution_file_path": "/etc/os-release",
+#        "ansible_distribution_file_variety": "Debian",
+#        "ansible_distribution_major_version": "20",
+#        "ansible_distribution_release": "focal",
+#        "ansible_distribution_version": "20.04",
+
+
+
+
+# using    _when_   conditional to differentiate _ "ansible_distribution": "Ubuntu"    "ansible_distribution": "RedHat"
+
+
+
+
+---
+- name: install openjdk 11 java on redhat8 and on on ubuntu 20.04
+  hosts: all
+  become: yes
+  tasks:
+    - name: install nodejs
+      ansible.builtin.yum:       #u can use simply _yum_ also here
+          name: nodejs
+          update_cache: yes
+          state: present
+      when: ansible_facts['distribution'] == "RedHat"
+    - name: install nodejs
+      ansible.builtin.apt:       #u can use simply _apt_ also here
+         name: nodejs
+         update_cache: yes
+         state: present
+      when: ansible_facts['distribution'] == "Ubuntu"
+
+
+# ansible-playbook -i hosts install-openjdk11-javaonredhat8.yml --syntax-check
+# ansible-playbook -i hosts install-openjdk11-javaonredhat8.yml 
+# run these in bash

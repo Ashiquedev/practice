@@ -1,0 +1,56 @@
+---
+- name: install sonarqube
+  become: yes
+  hosts: all
+  tasks:
+    - name: Install required packages
+      ansible.builtin.package:
+        name: "{{ req_packages_need_to_install }}"
+        state: present
+        update_cache: yes
+    - name: Set up Postgres 14 repo
+      ansible.builtin.shell: 
+        cmd:
+          - sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+          - wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+      warn: no
+    - name: "Install packages"
+      ansible.builtin.apt: 
+        name: "{{ postgresql_package }}"
+        state: present
+        update_cache: yes
+    - name: "Install Python packages"
+      pip: 
+        name: "{{ postgresql_python_dep_package }}"  
+        state: present
+        update_cache: yes
+    - name: "Start and enable services"
+      ansible.builtin.systemd: 
+        name: postgresql@12-main
+        state: started
+        enabled: yes
+    - name: "Create sonarqube database"
+      postgresql_db:
+        state: present
+        name: "{{ db_name }}"
+      become: yes
+      become_user: postgres
+
+    - name: "Create sonar db user"
+      postgresql_user:
+        state: present
+        name: "{{ db_user }}"
+        role_attr_flags: CREATEDB,CREATEROLE,SUPERUSER
+        password: "{{ db_password }}"
+      become: yes
+      become_user: postgres
+    - name: "Grant db user access to sonarqube db"
+      postgresql_privs:
+        type: database
+        database: "{{ db_name }}"
+        roles: "{{ db_user }}"
+        grant_option: yes
+        privs: all
+      become: yes
+      become_user: postgres
+    

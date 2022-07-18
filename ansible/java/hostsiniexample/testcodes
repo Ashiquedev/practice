@@ -1,0 +1,10 @@
+ansible -i hosts -m ping all       pings all
+
+ansible -i hosts -m ping ubuntu    pings only ubuntu
+
+ansible -i hosts -m ping redhat    pings only redhat
+
+ansible -i hosts -m ping app_server  pings only appserver
+
+also can ping individually    ansible -i hosts -m ping <ipaddress>
+

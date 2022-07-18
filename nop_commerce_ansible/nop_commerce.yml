@@ -1,0 +1,102 @@
+---
+- name: installing nop commerce
+  hosts: all
+  become: yes
+  vars:
+    - microsoft_deb_package_url: https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb
+  tasks:
+    - name: packages-microsoft-prod.deb download
+      apt:
+        deb: "{ microsoft_deb_package_url }"
+    - name: Install transport-https
+      ansible.builtin.package:
+        name: [ "apt-transport-https" , "aspnetcore-runtime-6.0" ]
+        state: present
+        update_cache: yes
+  #disallow root login remotely
+  #remove test database and access to it
+  #reload privilage tables now
+    - name: Install mysql
+      apt:
+        name:
+           - mysql-server
+           - python3-pymysql
+           - python-apt
+           - python3-apt
+        state: latest
+    - name: Set MySQL root Password
+      mysql_user:
+          login_host: 'localhost'
+          login_user: 'root'
+          login_password: ''
+          name: 'root'
+          password: 'Ashik@1431'
+          state: present
+    - name: remove anonymous users
+      mysql_user:
+        name: ''
+        host_all: yes
+        state: absent
+
+
+    - name: Install nginx
+      ansible.builtin.package:
+          name: nginx
+          state: present
+    - name: Run the nginx service
+      ansible.builtin.systemd:
+        state: started
+        name: nginx
+    - name: configure nginx as a reverse proxy to forward requests to your ASP.NET Core app
+      ansible.builtin.template:
+          src: 'proxy_pass.j2'
+          dest: "/etc/nginx/sites-available/default"
+          owner: devops
+          group: devops
+      notify:
+          - Restart Nginx
+    - name: Create a symbolic link
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available
+        dest: /etc/nginx/sites-enabled
+        owner: devops
+        group: devops
+        state: link
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: /var/www/"{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - nopCommerce450
+        - bin
+        - logs
+
+    - name: Install unzip
+      ansible.builtin.package:
+          name: unzip
+          state: present
+    - name: Unarchive a file that needs to be downloaded (added in 2.0)
+      ansible.builtin.unarchive:
+        src: https://github.com/nopSolutions/nopCommerce/releases/download/release-4.50.2/nopCommerce_4.50.2_NoSource_linux_x64.zip
+        dest: /var/www/nopCommerce450
+        remote_src: yes
+        creates: /var/www/nopCommerce450/nopCommerce_4.50.2_NoSource_linux_x64
+        mode: 0550
+    - name: configure nginx as a reverse proxy to forward requests to your ASP.NET Core app
+      ansible.builtin.template:
+          src: 'nopCommerce450_service.j2'
+          dest: "/etc/systemd/system/nopCommerce450.service"
+          owner: devops
+          group: devops
+      notify:
+        - Restart nopCommerce450
+  handlers:
+    - name: Restart nopCommerce450
+      service:
+          name: nopCommerce450.service
+          state: restarted
+    - name: Restart Nginx
+      service:
+          name: nginx
+          state: restarted

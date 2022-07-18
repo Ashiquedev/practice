@@ -1,0 +1,9 @@
+---
+- name: packages-microsoft-prod.deb download
+    apt:
+    deb: "{ microsoft_deb_package_url }"
+- name: Install transport-https and aspnetcore6.0
+    ansible.builtin.package:
+    name: [ "apt-transport-https" , "aspnetcore-runtime-6.0" ]
+    state: present
+    update_cache: yes

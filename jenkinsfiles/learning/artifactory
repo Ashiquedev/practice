@@ -1,0 +1,72 @@
+# artifactory
+-----------
+* artifacts:  applications built into a single sharable easily movable file
+
+* artifact formats: jar,war,zip,tar etc
+
+* artifactory repository: 
+    - storage of those artifacts
+* artifactory repository needs to support the specific formats; lang based; docker based all files need tos store
+
+* artifact repository manager: which sipports all types of artifacts eg: nexus,jfrog
+
+# nexus:
+
+* we can upload and store different built artifacts
+* retrieve (download) artifacts later or when ever we want
+* acts as central storage to store artifacts of multiple projects
+* so we use nexus internally in a company
+* types: public repository managers eg: libraries for dependecies to download
+        eg: mvn central repository(for java/jar files), npm repository (for javascript dependencies)
+
+
+* =========================
+nexus ui
+- security > users > create local user
+        - fill the details like id,firstname,email,pwd,status:active,role: anonymous
+- security > roles > create role > fill the details like: id name: role name: privilages: gives least privilages
+
+```gradle
+version '1.0-SNAPSHOT'
+# in location of:
+apply plugin:'maven-publish'
+publishing{
+    publications {
+        maven(MavenPublication) {
+            artifact(<location of jar for eg:>"build/lib/<proj name>-$version"+"..jar"){
+                extension 'jar'
+            }
+        }    
+    }
+    repositories {
+        maven {
+            name 'nexus'
+            url "http://[your nexus ip]:[nexus port]/repository/<name of repository>"  ==> present in detals of requred repo in repository section
+            credentials {
+                username project.repoUser
+                password project.repoPassword
+            }
+        }
+    }
+}
+for cresentilas we wont give directly: we create gradle.properties file in project
+```
+repoUser = ashik
+repoPassword = Password
+```
+# in settings.gradle we configure project name
+rootProject.name = 'my-app'
+```
+>>> gradlew build # creates build folder in which in lib folder jar file is preesent
+
+in project root folder
+>>> gradlew publish # this command run bcz of plugin
+>>> 
+
+
+MAVEN configuration:
+# refer here<https://www.baeldung.com/maven-deploy-nexus> for script
+
+* run mvn package command from project root dir >> creates target folder in tht jar file is generated
+
+mvn deply ... command to deplys to nexus

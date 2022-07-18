@@ -1,0 +1,6 @@
+- name: Restrict write and execute access to User 
+  ansible.windows.win_acl:
+    user: $USER
+    path: "{{  }}"
+    type: allow
+    rights: ExecuteFile

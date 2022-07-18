@@ -1,0 +1,11 @@
+---
+- name: Restart nopCommerce450
+  service:
+    name: nopCommerce450.service
+    state: restarted
+    daemon_reload: yes
+- name: Restart Nginx
+  service:
+    name: nginx
+    state: restarted 
+    daemon_reload: yes

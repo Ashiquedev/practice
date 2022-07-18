@@ -1,0 +1,28 @@
+#manual steps
+
+#sudo yum update
+#sudo yum install java-11-openjdk
+
+
+
+#sudo     refers to perform taks as root user ........... so,  'become:yes'
+#yum module in ansible is ansible.builtin.yum
+#yum update refers to  update_cache:yes 
+#job to install .... so  state:present
+#name what to install so java-11-openjdk
+
+
+---
+- name: install openjdk 11 java on redhat8
+  hosts: all
+  become: yes
+  tasks:
+    - name: install openjdk 11
+      ansible.builtin.yum:  
+         name: openjdk-11-jdk
+         update_cache: yes
+         state: present
+
+# ansible-playbook -i hosts install-openjdk11-javaonredhat8.yml --syntax-check
+# ansible-playbook -i hosts install-openjdk11-javaonredhat8.yml 
+# run these in bash

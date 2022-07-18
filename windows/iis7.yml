@@ -1,0 +1,29 @@
+ansible_site_path: "c:\\inetpub\\wwwroot\\ansibletest"
+
+---
+- name: Install IIS
+  hosts: windows
+  gather_facts: true
+  tasks:
+   - win_feature:
+       name: "web-server"
+       state: present
+       restart: yes
+       include_sub_features: yes
+       include_management_tools: yes
+    - name: create a new application pool
+      win_iis_webapppool:
+        name: ansiblepool
+        state: started
+   
+    - name: Acme IIS site
+      win_iis_website:
+        name: "Acme"
+        state: started
+        port: 80
+        ip: 127.0.0.1
+        hostname: acme.local
+        application_pool: "acme"
+        physical_path: c:\sites\acme
+        parameters: logfile.directory:c:\sites\logs
+      register: website

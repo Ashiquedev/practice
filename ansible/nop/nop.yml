@@ -1,0 +1,35 @@
+---
+- name: nop commerce installation on ubuntu 20.04
+  become: yes
+  hosts: all
+  vars:
+    myurl: "https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb"
+    mydest: "packages-microsoft-prod.deb"
+    secure_install_mysql_hosts: [ "localhost" , "172.31.23.252" ]
+  tasks:
+    - name: Download file from a file path
+      get_url:
+        url: "{{ myurl }}"
+        dest: "./{{ mydest }}"
+        mode: '0644'
+    - name: dpkg
+      dpkg_selections:
+        name: "{{ mydest }}"
+        selection: install
+    - name: update cache
+      apt:
+        update_cache: yes
+    - name: apt-transport-https
+      apt:
+        update_cache: yes
+        name: apt-transport-https
+        state: present
+    - name: dpkg
+      dpkg_selections:
+        name: "{{ mydest }}"
+        selection: install
+    - name: aspnetcore-runtime-6.0
+      pkg:
+        update_cache: yes
+        name: aspnetcore-runtime-6.0
+        state: present

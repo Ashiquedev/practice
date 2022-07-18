@@ -1,0 +1,38 @@
+---
+- name: create sonar group
+  ansible.builtin.group:
+    name: sonar
+    state: present
+- name: createuser
+  ansible.builtin.user:
+    name: sonar
+    state: present
+    group: sonar
+    home: "{{ sonar_home }}"
+    password: sonar
+- name: installing zip
+  ansible.builtin.package:
+    name: 7zip
+    state: present
+    update_cache: yes   
+- name: Unarchive sonarqube
+  ansible.builtin.unarchive:
+    src: "{{ sonarqube_download_url }}"
+    dest: /tmp/
+    owner: jenkins
+    group: jenkins 
+    remote_src: yes
+- name: copying files
+  ansible.builtin.copy:
+    src: /tmp/sonarqube-9.4.0.54424/
+    dest: "{{ sonar_home }}"
+    owner: sonar
+    group: sonar
+    mode: '0750'
+
+    
+
+    
+    
+    
+    

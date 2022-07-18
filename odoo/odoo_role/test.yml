@@ -1,0 +1,6 @@
+---
+- name: installing odoo
+  hosts: all
+  become: yes
+  roles:
+    - odoo15

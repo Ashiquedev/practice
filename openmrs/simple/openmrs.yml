@@ -1,0 +1,199 @@
+---
+- name: openmrs installation
+  become: yes
+  hosts: 
+    - web
+    - db
+  tasks:
+    - name: sudo useradd -m -d /opt/tomcat -U -s /bin/false tomcat 
+      #hosts: web     
+      ansible.builtin.user:
+        name: tomcat
+        shell: /bin/false
+        home: /opt/tomcat
+        state: present
+      when: inventory_hostname in groups['web']                                   
+    - name: installing openjdk-8
+      ansible.builtin.apt:
+        #hosts: web
+        name: openjdk-8-jdk
+        update_cache: yes
+        state: present
+      when: inventory_hostname in groups['web']
+    - name: downloading tomcat archive      
+      ansible.builtin.get_url:
+        #hosts: web
+        dest: /tmp/apache-tomcat-8.5.78.tar.gz
+        mode: 0644
+        url: https://dlcdn.apache.org/tomcat/tomcat-8/v8.5.78/bin/apache-tomcat-8.5.78.tar.gz
+      when: inventory_hostname in groups['web']
+    - name: extract the archive
+      ansible.builtin.unarchive:
+        #hosts: web
+        dest: /opt/tomcat/
+        mode: 0750
+        owner: tomcat
+        group: tomcat
+        extra_opts: [--strip-components=1]
+        #remote_src: yes
+        src: /tmp/apache-tomcat-8.5.78.tar.gz
+      when: inventory_hostname in groups['web']
+    - name: grant tomcat ownership over the extracted installation
+      ansible.builtin.file:
+        #hosts: web
+        path: /opt/tomcat/
+        owner: tomcat
+        group: tomcat
+        mode: '0754'
+      when: inventory_hostname in groups['web']
+    - name: tomcat service
+      ansible.builtin.template:
+          #hosts: web 
+          src: 'tomcat_service.j2'
+          dest: "/etc/systemd/system/tomcat.service"
+      when: inventory_hostname in groups['web']
+      notify:
+        - Restart tomcat
+    - name: Make sure a tomcat service unit is running
+      ansible.builtin.systemd:
+        #hosts: web
+        state: started
+        name: tomcat
+        enabled: yes
+        daemon_reload: yes
+      when: inventory_hostname in groups['web']
+    - name: create a directory for OpenMRS and set proper ownership 
+      ansible.builtin.file:
+        #hosts: web
+        group: tomcat
+        owner: tomcat
+        path: /var/lib/OpenMRS
+        state: directory
+        #recurse: yes
+      when: inventory_hostname in groups['web']
+    - name: downloading openmrs
+      ansible.builtin.get_url:
+        #hosts: web
+        dest: /var/lib/OpenMRS/
+        mode: 0744
+        url: https://sourceforge.net/projects/openmrs/files/releases/OpenMRS_Platform_2.5.0/openmrs.war
+      when: inventory_hostname in groups['web']
+    - name: copy the downloaded file to the Tomcat webapps directory
+      ansible.builtin.copy:
+        #hosts: web
+        src: /var/lib/OpenMRS/openmrs.war
+        dest: /opt/tomcat/webapps/openmrs.war
+        group: tomcat
+        owner: tomcat
+        mode: 0774
+        #remote_src: yes
+      when: inventory_hostname in groups['web']
+    - name: installing mysql packages on web mysql client
+      ansible.builtin.package:
+         #hosts: web
+         name: [ "mysql-client","python3-pymysql","mysql" ]
+         state: present 
+      when: inventory_hostname in groups['web']  
+    - name: installing mysql packages on server    
+      ansible.builtin.package:
+           # hosts: db
+            name: [ "mysql-server" , "python3-pymysql" ]  
+            state: present
+      when: inventory_hostname in groups['db']
+    - name: Make sure a mysql service unit is running        
+      ansible.builtin.systemd:
+            #hosts: all
+            state: started
+            name: mysql
+            enabled: yes 
+      when: inventory_hostname in groups['db']
+    - name: changing the binding address
+      ansible.builtin.template:
+            #hosts: db
+            src: "mysqldconf.j2"
+            dest: "/etc/mysql/mysql.conf.d/mysqld.cnf"
+            #remote_src: yes
+      notify:
+           - Restart mysql
+      when: inventory_hostname in groups['db']
+    - name: check the plugin of root
+      ansible.builtin.shell:
+            #hosts: db
+            cmd: mysql -Nse "select count(*) from mysql.user where user = 'root' and authentication_string is null" 
+      ignore_errors: yes
+      register: root_password
+      when: inventory_hostname in groups['db']
+    - name: print rootpassword
+      ansible.builtin.debug:
+            #hosts: db
+            var: root_password.stdout
+      when: inventory_hostname in groups['db']
+    - name: Change the authentication plugin of MySQL root user to mysql_native_password
+      ansible.builtin.shell:
+            #hosts: db
+            cmd: mysql -Nse 'UPDATE mysql.user SET plugin="mysql_native_password" WHERE user="root" AND host="localhost"'
+      ignore_errors: yes
+      when:
+            root_password.stdout == "0" and  inventory_hostname in groups['db']
+    - name: Flush Privileges
+      ansible.builtin.shell:
+            #hosts: db
+            cmd: mysql -u root -e 'FLUSH PRIVILEGES'
+      ignore_errors: yes
+      when:
+          (root_password.stdout == "0") and  (inventory_hostname in groups['db'])
+      notify:
+          - Restart mysql
+    - name: Set MySQL root Password
+      mysql_user:
+          #hosts: db
+          check_implicit_admin: yes
+          login_host: 'localhost'
+          login_user: 'root'
+          login_password: ''
+          name: 'root'
+          password: 'Ashik@1431'
+          state: present
+      when:
+          (root_password.stdout == "0") and  (inventory_hostname in groups['db'])
+      ignore_errors: yes
+    - name:  Ensure no user named 'tomcat'@'localhost' exists, also passing in the auth credentials.
+      mysql_user:
+          login_user: root
+          login_password: Ashik@1431
+          host_all: yes
+          name: tomcat
+          state: absent
+      register: no_tomcat
+      when:
+          (root_password.stdout == "0") and  (inventory_hostname in groups['db'])
+    - name: print no_tomcat
+      ansible.builtin.debug:
+            var: no_tomcat
+      when:
+          (root_password.stdout == "0") and  (inventory_hostname in groups['db'])
+    - name: Create database user with password and all database privileges and 'WITH GRANT OPTION'     
+      community.mysql.mysql_user:
+          #hosts: db
+          name: tomcat
+          password: 12345
+          plugin: "mysql_native_password"
+          priv: '*.*:ALL,GRANT'
+          state: present
+          login_host: ''
+          login_user: 'root'
+          login_password: 'Ashik@1431'      
+      when:
+          (no_tomcat.msg == "User doesn't exist")  and  (inventory_hostname in groups['db'])
+      ignore_errors: yes
+  handlers:
+    - name: Restart tomcat
+      service:
+          name: tomcat
+          state: restarted
+          daemon_reload: yes
+    - name: Restart mysql
+      service:
+          name: mysql
+          state: restarted
+          daemon_reload: yes

@@ -1,0 +1,12 @@
+---
+- name: installing angularjs
+  hosts: all
+  become: yes
+  vars:
+    - package_name_of_angularjs: "@angular/cli"
+  tasks:
+    - name: Install Angular.js
+      npm:
+        name: "{{ package_name_of_angularjs }}"
+        global: yes
+        state: present

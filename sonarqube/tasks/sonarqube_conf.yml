@@ -1,0 +1,47 @@
+---
+- name: install sonarqube
+  become: yes
+  hosts: all
+  tasks:
+    - name: Create a configuration file odoo.conf
+      ansible.builtin.template:
+        dest: /opt/sonarqube/conf/sonar.properties
+        src: 'sonar_properties.j2'
+        mode: '0750'
+        owner: sonar
+      notify:
+           - restart sonarqube
+    - name: Create a configuration file odoo.conf
+      ansible.builtin.template:
+        dest: /opt/sonarqube/bin/linux-x86-64/sonar.sh
+        src: 'sonar_sh.j2'
+        mode: '0750'
+        owner: sonar
+      notify:
+           - restart sonarqube
+    - name: Create a configuration file odoo.conf
+      ansible.builtin.template:
+        dest: /etc/systemd/system/sonar.service
+        src: 'sonarservice.j2'
+        mode: '0750'
+        owner: sonar
+      notify:
+           - restart sonarqube
+    - name: Update hosts
+      lineinfile:
+        path: /etc/sysctl.conf
+        state: present
+        line: "{{ item }}"
+      with_items:
+        - vm.max_map_count=262144
+        - fs.file-max=65536
+        - ulimit -n 65536
+        - ulimit -u 4096
+      notify:
+           - restart sonarqube
+    - name: start n enable sonarqube
+      ansible.builtin.systemd:
+         name: /opt/sonarqube/bin/linux-x86-64/sonar.sh
+         state: restarted
+         daemon_reload: yes
+         enabled: yes

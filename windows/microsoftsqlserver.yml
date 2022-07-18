@@ -1,0 +1,5 @@
+choco install sql-server-express
+- name: Install Microsoft SQL Server 2019 Express 2019.20200409
+  win_chocolatey:
+    name: sql-server-express
+    state: present

@@ -1,0 +1,72 @@
+pipeline{
+    agent {
+         label 'jdk11'
+          }
+    options {         
+        timeout(time: 1, unit: 'HOURS')
+    }
+    parameters { 
+        choice(name: 'MAVEN_TASKS', choices: ['clean','compile', 'test','package', 'clean compile test package'], description: 'choose the maven task to perform')
+         }
+    triggers {
+         cron('* 1 * * *')
+          }
+    stages{
+        stage('clone the git repo'){
+            steps{
+                 git branch: 'main', changelog: false, url: 'https://github.com/Ashiquedev/spring-petclinic.git'
+            }
+        }
+        stage('maven all works'){
+            steps{
+                sh  script: 'mvn clean compile test package'
+            }
+        }
+        stage("build & SonarQube analysis") {
+            agent sonar
+            steps {
+              withSonarQubeEnv('My_SonarQube_Server') {
+                sh 'mvn clean package sonar:sonar'
+              }
+            }
+          }
+        stage('maven parameter works'){
+            steps{
+                sh  script: "mvn ${params.MAVEN_TASKS}"
+            }
+        }
+        stage('test results'){
+            steps{
+                sh  script: 'mvn test'
+                junit  testResults: 'target/surefire-reports/*.xml'
+            }
+        }
+        stage('artifacts'){
+            steps{
+                archiveArtifacts artifacts: '**/*.jar', followSymlinks: false
+            }
+        }
+    }
+    post { 
+        success { 
+            mail bcc: '',
+            body: "$BUILD_NUMBER of   $JOB_NAME is success", 
+            cc: '', 
+            from: 'ashik@ashik.com', 
+            replyTo: '', 
+            subject: 'pipeline is success', 
+            to: 'ashik.shek1994@gmail.com'
+            echo "$BUILD_NUMBER of   $JOB_NAME is success"
+        }
+        failure { 
+            mail bcc: '',
+            body: "$BUILD_NUMBER of   $JOB_NAME is success", 
+            cc: '', 
+            from: 'ashik@ashik.com', 
+            replyTo: '', 
+            subject: 'pipeline is failed', 
+            to: 'ashik.shek1994@gmail.com'
+            echo "$BUILD_NUMBER of   $JOB_NAME is failed"
+        }
+    }
+}

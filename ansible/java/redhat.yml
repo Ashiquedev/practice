@@ -1,0 +1,34 @@
+[redhat]
+172.31.18.99   java_package=java-11-openjdk
+
+[ubuntu]
+172.31.26.86   java_package=openjdk-11-jdk
+
+
+'''yml
+all:
+  children:
+    ubuntu:
+      hosts:
+        172.31.26.86:
+        localhost:
+    redhat:
+      hosts:
+        172.31.18.99:
+    appserver:
+      hosts:
+        172.31.26.86:
+        172.31.18.99:
+'''
+
+
+---
+- name: install openjdk 11 java on redhat8 and on on ubuntu 20.04
+  hosts: all
+  become: yes
+  tasks:
+    - name: install openjdk 11 on redhat and ubuntu bynusing generic os package module
+      ansible.builtin.package:
+        name: "{{ java_package }}"
+        #update_cache: yes   no need here
+        state: present

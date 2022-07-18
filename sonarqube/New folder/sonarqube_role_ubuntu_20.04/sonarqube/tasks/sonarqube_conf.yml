@@ -1,0 +1,45 @@
+---
+- name: Create a properties file
+  ansible.builtin.template:
+    dest: "{{ sonar_home }}/conf/sonar.properties"
+    src: 'sonar_properties.j2'
+    mode: '0750'
+    owner: sonar
+  notify:
+       - restart sonarqube
+- name: Create a sonar sh file
+  ansible.builtin.template:
+    dest: "{{ sonar_home }}/bin/linux-x86-64/sonar.sh"
+    src: 'sonar_sh.j2'
+    mode: '0750'
+    owner: sonar
+  notify:
+       - restart sonarqube
+- name: Create a service file
+  ansible.builtin.template:
+    dest: /etc/systemd/system/sonar.service
+    src: 'sonar_service.j2'
+    mode: '0750'
+    owner: sonar
+  notify:
+       - restart sonarqube
+- name: Update hosts
+  lineinfile:
+    path: /etc/sysctl.conf
+    state: present
+    line: "{{ item }}"
+  with_items:
+    - vm.max_map_count=262144
+    - fs.file-max=65536
+    - ulimit -n 65536
+    - ulimit -u 4096
+  notify:
+       - restart sonarqube
+- name: start n enable sonarqube
+  ansible.builtin.systemd:
+     name: sonar
+     state: restarted
+     daemon_reload: yes
+     enabled: yes
+  notify:
+       - restart postgres

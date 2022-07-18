@@ -1,0 +1,31 @@
+---
+- name: install java 11
+  become: yes
+  hosts: all
+  tasks:
+    - name: createuser
+      ansible.builtin.user:
+        name: sonar
+        state: present
+        group: sonar
+        home: /opt/sonarqube
+        password: sonar
+    - name: installing zip
+      ansible.builtin.package:
+        name: zip
+        state: present
+        update_cache: yes
+    - name: Download sonarqube
+      ansible.builtin.get_url:
+        url: "{{ sonarqube_download_url }}"
+        dest: /tmp/sonarqube/
+        mode: '0750'
+    - name: Unarchive sonarqube
+      ansible.builtin.unarchive:
+        src: /tmp/sonarqube/*.zip
+        dest: /opt/sonarqube/
+        owner: sonar
+        group: sonar        
+        remote_src: yes
+    
+    

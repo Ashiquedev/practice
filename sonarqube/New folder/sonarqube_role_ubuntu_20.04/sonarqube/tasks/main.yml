@@ -1,0 +1,5 @@
+---
+- include_tasks: java_installation.yml
+- include_tasks: postgresql.yml
+- include_tasks: sonarqube_installation.yml
+- include_tasks: sonarqube_conf.yml

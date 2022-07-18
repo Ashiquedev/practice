@@ -1,0 +1,23 @@
+  aws opsworks  create-instance
+
+--instance-type "t2.micro"
+--count 1
+--ami-id "ami-04505e74c0741db8d"
+--ssh-key-name "practice.pem"
+--availability-zone "ap-southeast-1a"
+--subnet-id <value>
+--architecture "x86_64"
+
+
+
+  start-instance
+--instance-id <value>
+
+
+aws ec2 authorize-security-group-ingress --group-id <GroupId> 
+                                         --protocol tcp --port 22 --cidr 0.0.0.0/0
+
+sudo apt update -y
+sudo apt install software-properties-common -y
+sudo add-apt-repository --yes --update ppa:ansible/ansible -y
+sudo apt install ansible -y

@@ -1,0 +1,25 @@
+
+-x, --extract, --get       extract files from an archive
+  -f, --file=ARCHIVE         use archive file or device ARCHIVE
+
+sudo tar -xf /tmp/apache-tomcat-${version}-src.tar.gz -C /opt/tomcat/
+
+apache-tomcat-"{{ tomcat_version }}"-src.tar.gz
+apache-tomcat-10.0.18-src.tar.gz
+
+ansible.builtin.unarchive:
+	dest: /opt/tomcat/
+	src: /tmp/apache-tomcat-"{{ tomcat_version }}"-src.tar.gz
+
+================================================================================
+ln [OPTION]... TARGET... DIRECTORY
+sudo ln -s /opt/tomcat/apache-tomcat-${version}-src /opt/tomcat/latest
+
+ -s, --symbolic              make symbolic links instead of hard links
+
+ create links to each TARGET in DIRECTORY.
+
+
+fatal: [172.31.26.86]: FAILED! => {
+    "msg": "The task includes an option with an undefined variable. The error was: {{ home_dir }}/apache-tomcat-{{ version }}-src: 'version' is undefined\n\nThe error appears to be in '/home/devops/ansible/practice/tomcat/tomcat.yml': line 36, column 7, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n        owner: \"{{ user_name }}\"\n    - name: extract file and copt to /opt/tomcat\n      ^ here\n"
+}

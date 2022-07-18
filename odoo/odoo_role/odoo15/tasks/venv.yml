@@ -1,0 +1,24 @@
+---
+- name: Install virtualenv via pip
+  pip:
+    name: virtualenv
+    executable: pip3
+- name: Create a new Python virtual environment for Odoo
+  become_user: "{{ user_name }}"
+  become: yes
+  ansible.builtin.pip:
+    chdir: /opt/odoo15
+    state: present  
+    name: "{{item}}"
+  with_items:
+    - setuptools
+    - wheel  
+- name: requrements.txt
+  become_user: "{{ user_name }}"
+  become: yes
+  ansible.builtin.pip:
+    chdir: /opt/odoo15
+    virtualenv: "{{ virtualenv_path }}"
+    virtualenv_python: python3
+    requirements: "{{ requirementstxt_path }}"
+    state: present

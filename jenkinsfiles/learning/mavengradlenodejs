@@ -1,0 +1,137 @@
+gradle:
+
+gradlew build: == mvn package
+
+------>  build folder created > classes
+                              libs > jar/war file created when we execute gradlew build
+                               reports
+                             resources
+                             test-results
+                             tmp
+         build folder in gradle == target folder in maven
+
+         target folder >> jar/war files are present
+
+         dependencies: maven: pom.xml
+                       gradle: build.gradle
+        local repo location: .m2 > REpository
+
+nodejs:  
+        build javascript applications: zip/tar file
+        no spl aretifact type
+
+        npm / yarn >> package.json for dependencies == pom.xml ==build.gradle
+
+        npm/yarn are package managers > not build tools >> install dependencies but not used for transpiling jscode
+
+Transpiler definition
+Meanings
+(TRANSlate comPILER) Software that converts the source code of one language into the source code of another.
+
+Transpiler definition
+
+Filters
+Meanings
+(TRANSlate comPILER) Software that converts the source code of one language into the source code of another.
+
+
+npm install >> install all dependencies that are present in package.json   >>> downloaded dependencies tht from its own npm repository just like maven repository
+
+
+command line tool:
+npm satrt - start the application > run the application locally
+npm stop - stop the application
+npm test run the tests
+npm publish - publish the artifact
+
+node js zip/tar file includes : mostly code not dependencies by default so to run the app on server firt we need to install all dependencies first and then unpack zip/tar file and then run the app as we run it locally
+
+so we need to send or copy the tar/zip and package.json to the server  inorder to run the application make artifact such that json file also included in tht
+
+npm pack >>>> creates tar/zip file  >> location: node_modules folder created and in tht artifact is present
+
+
+===============================
+
+front end: React js
+backend: java/nodejs/python etc 
+
+frontend and backend both are java(reactjs & nodejs) :  we can do in single artifact> it has one json file for both frontend and backend > one artifact for the whole project
+frontend and backend both are different(reactjs & python)  :  we can do seperate artifacts > then package.json is available for both frontend and backend > two jason foles> two artifacts
+
+react js:
+it is java script used for front end
+unlike nodejs react js need to tranpiled bcz : browser doesn,t suppoet latest JS version or other fancy decorations like jsx 
+- need to compressed for browser not too large to download and for fasten download to the browser code needs to compressed/minified 
+- so we need to compress the frontend javascipt code files(JS files) to CSS code files which are compressed to load faster
+- so for these compress work we have seperate tools for that - BUILD TOOLS? BLUNDER
+                eg: WEB PACK , GULP
+
+webpack:
+so like maven,gradle how they build the java webpack also build the JS compress files <just we need to tell which files we want to minimise to do>
+webpack transpiles -> minifies -> bundles -> remove empty spaces -> make machine readable  -> compresses the code
+
+In package.json there they mentioned regarding webpack, gulp etc in dev dependencies so by installing dependencies they also downloaded so thr is no need to download for us seperately >>> this is we considered as an equivalent for maven and gradle for build
+
+npm run build >> in this command build refers to webpack as "build":"webpack" written innpackage.json
+
+by run this command server.bundle.js file is generated which consists of code like machine readable 
+
+npm /yarn we can use for dependencies to download for frontend
+
+we can maintain seperate package jsdon or common for both frontend and ackend
+it can be advantage to have same build and package management tools
+
+react+java => 
+bundle frontend app with webpack
+manage dependencies with npm or yarn
+package everything into a war file
+
+-----
+to push the artifact to repository like jfrog or nexus is:
+
+npm : npm publish  <= push
+
+then we can get download by curl , wget from anywhere <= pull
+
+
+install dependencies => run tests => build/bundle app => push to repo
+
+no need to run the app locally
+
+-----------------------------
+freestyle build:
+npm install --save-dev jenkins-mocha
+npm install
+npm install --dev
+npm test
+sonar-scanner \
+  -Dsonar.projectKey=nodejs \
+  -Dsonar.sources=. \
+  -Dsonar.host.url=http://34.215.85.249:9000 \
+  -Dsonar.login=3b150f577e7e0b247fa1cf485b3f9a2c22624261
+npm run build
+npm pack
+-----------------------------------------------------------------
+
+step1: git checkout syntax from scripted pipeline generator
+
+2. build:  sh npm install
+
+node -v >> gives version of node js if the node js installation works on other version then we can download it from mention below
+
+manage jenkins > manage plugins > nodejs
+manage jenkins > golbal tool configuration > nodejs
+                        --- name: nodejs_<version>
+                        install automatically
+
+tools {nodejs "<name given in nodejs golbal tool configuration>"}
+
+stage("Bulid"){
+    nodejs(nodeJSInstallationNMAe: 'nodejs153.0'){
+    sh "npm install"
+    }
+}
+
+
+maven: def mavenhome = tool name: "maven3.6.2"

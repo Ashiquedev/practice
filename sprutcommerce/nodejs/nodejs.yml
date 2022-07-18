@@ -1,0 +1,61 @@
+---
+- name: installing nodejs
+  hosts: all
+  become: yes
+  vars:
+    - node_js_version: "14.x"
+    - node_js_deb_url: "https://deb.nodesource.com/setup_{{ node_js_version }}"
+    - temp_dest_of_nodejsdeb_package: /tmp
+    - nodejs_package_name_with_dependencies: [ "build-essential","nodejs","npm" ]
+    - additional_software_req_for_nodejs_npm: [ "forever","apidoc" ]
+
+  tasks:
+    - name: Download setup_14.x script
+      ansible.builtin.uri:
+        url: "{{ node_js_deb_url }}"
+        dest: "{{ temp_dest_of_nodejsdeb_package }}"
+        mode: 0750
+        follow_redirects: yes
+        return_content: yes
+    - name: Setup Node.js
+      ansible.builtin.shell:
+        chdir: "{{ temp_dest_of_nodejsdeb_package }}"
+        cmd: "bash curl {{ node_js_deb_url }}"
+    - name: Install Node.js (JavaScript run-time environment)
+      ansible.builtin.package:
+        name: "{{ nodejs_package_name_with_dependencies }}"
+        state: present
+        update_cache: yes
+    - name: "Install forever (to run Node.js app)."
+      npm:
+        name: "{{ additional_software_req_for_nodejs_npm }}"
+        global: yes 
+        state: present
+
+
+        ==========================
+
+
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  vars:
+    NODEJS_VERSION: "14"
+    ansible_distribution_release: "xenial" #trusty
+  tasks:
+    - name: Install the gpg key for nodejs LTS
+      apt_key:
+        url: "https://deb.nodesource.com/gpgkey/nodesource.gpg.key"
+        state: present
+
+    - name: Install the nodejs LTS repos
+      apt_repository:
+        repo: "deb https://deb.nodesource.com/node_{{ NODEJS_VERSION }}.x {{ ansible_distribution_release }} main"
+        state: present
+        update_cache: yes
+
+    - name: Install the nodejs
+      apt:
+        name: nodejs
+        state: present

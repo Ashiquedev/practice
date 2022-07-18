@@ -1,0 +1,40 @@
+pipeline{
+    agent {
+         label 'jdk11'
+          }
+    stages{
+        stage('clone the git repo'){
+            steps{
+                 git branch: 'main', changelog: false, url: 'https://github.com/Ashiquedev/nodejs_sample.git'
+            }
+        }
+        stage('install the dependencies'){
+            steps{
+                 sh "npm install"                 
+            }
+        }
+        stage('test'){  
+            steps{
+                sh "npm test"    
+           }              
+        }
+        stage("build & SonarQube analysis") {
+            steps {
+              withSonarQubeEnv('sonarqube') {
+                  sh '''sonar-scanner \\
+                        -Dsonar.projectKey=nodejs \\
+                        -Dsonar.sources=. \\
+                        -Dsonar.host.url=http://34.215.85.249:9000 \\
+                        -Dsonar.login=3b150f577e7e0b247fa1cf485b3f9a2c22624261'''
+              }
+            }
+         }
+        stage("Quality Gate") {
+            steps {
+              timeout(time: 5, unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: false
+              }
+            }
+          }        
+    }
+}

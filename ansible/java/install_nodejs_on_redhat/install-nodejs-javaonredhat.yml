@@ -1,0 +1,45 @@
+#manual steps
+#dnf module install nodejs
+---
+- name: install nodejs java on ubuntu 20.04
+  hosts: all
+  become: yes
+  tasks:
+    - name: install nodejs
+      ansible.builtin.dnf:       #u can use simply _dnf_ also here
+         name: nodejs
+         update_cache: yes
+         state: present
+
+
+
+
+
+
+
+
+
+#manual steps
+#sudo yum update
+#sudo yum install nodejs
+
+
+'''
+---
+- name: install nodejs java on redhat
+  hosts: all
+  become: yes
+  tasks:
+    - name: install nodejs
+      ansible.builtin.yum:       #u can use simply _yum_ also here
+         name: nodejs
+         update_cache: yes
+         state: present
+
+'''
+
+
+
+# ansible-playbook -i hosts install-openjdk11-javaonubuntu.yml --syntax-check
+# ansible-playbook -i hosts install-openjdk11-javaonubuntu.yml 
+# run these in bash

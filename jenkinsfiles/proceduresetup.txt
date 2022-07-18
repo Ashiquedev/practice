@@ -1,0 +1,23 @@
+1. jenkins master   jdk-11 jenkins [sudo visudo,sudo vi /etc/ssh/sshd_config,sshd restart] 
+2. node-1 [user-creation:devops],[sudo visudo,sudo vi /etc/ssh/sshd_config,sshd restart],[switch to user devops install jdk-8, maven downloded, write m2 path in /etc/environment] 
+3. node-2 [user-creation:jenkins],[sudo visudo,sudo vi /etc/ssh/sshd_config,sshd restart], [switch to user jenkins install jdk-11, maven apt, write m2 path in /etc/environment]
+4. sonar  [install ansible],[user-creation:jenkins],[sudo visudo,sudo vi /etc/ssh/sshd_config,sshd restart], switch to jenkins user ,[ssh-keygen,ssh-copy-id] then install sonar from my sonarqube role > dont forget to reboot the system then <publicip:9000>
+
+
+ ssh -i /e/downloads/ohio_key.pem ubuntu@3.12.76.46
+ 
+ 
+ curl -v -X GET http://3.12.76.46:8080/crumbIssuer/api/json --user ashik:ashik
+ 
+ 
+ http://3.12.76.46:8080/env-vars.html 
+ 
+ 172.31.7.100
+ 
+ 
+ sonarqube
+ 
+ sonar/sonar  username/password
+ project name: spc_jenkins_pipeline
+ token name: jenkins    token :    e9d499f7d1003c81553b889bf4e08cbc8b7acdd5
+ 

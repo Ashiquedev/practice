@@ -1,0 +1,12 @@
+---
+- name: configure nginx as a reverse proxy to forward requests to your ASP.NET Core app
+  ansible.builtin.template:
+      src: 'proxy_pass.j2'
+      dest: "{ proxy_pass_sites_available }"
+  notify:
+    - Restart Nginx
+- name: Create a symbolic link
+  ansible.builtin.file:
+     src: "{ proxy_pass_sites_available }"
+     dest: "{ proxy_pass_sites_enabled }"
+     state: link

@@ -1,0 +1,10 @@
+---
+- name: installing java
+  ansible.builtin.package:
+    name: "{{ java_package }}"
+    state: present
+    update_cache: yes
+    
+
+
+    

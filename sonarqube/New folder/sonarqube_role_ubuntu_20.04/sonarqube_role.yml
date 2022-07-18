@@ -1,0 +1,6 @@
+---
+- name: installing sonarqube
+  hosts: all
+  become: yes
+  roles:
+    - sonarqube

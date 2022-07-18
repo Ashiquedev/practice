@@ -1,0 +1,102 @@
+---
+- name: installing sprut commerce
+  hosts: all
+  become: yes
+  tasks:
+    - name: Download setup_14.x script
+      ansible.builtin.get_url:
+        url: https://deb.nodesource.com/setup_14.x
+        dest: /tmp
+        mode: 0750
+    - name: Setup Node.js
+      ansible.builtin.shell:
+        chdir: /tmp
+        cmd: nodesource_setup.sh
+    - name: Install Node.js (JavaScript run-time environment)
+      ansible.builtin.package:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop:
+        - build-essential
+        - nodejs
+        - npm
+    - name: "Install forever (to run Node.js app)."
+      npm:
+        name: [ "forever","apidoc" ]
+        global: yes 
+        state: present
+    - name: install apache2
+      ansible.builtin.package:
+        name: apache2
+        state: present
+        update_cache: yes
+    - name: Enable the Apache2 module wsgi
+      community.general.apache2_module:
+        state: present
+        name: [ "proxy","proxy_http","headers" ]
+    - restart the apche2
+      ansible.builtin.systemd:
+        name: apache2
+        state: restarted
+    - name: installing mysql packages   
+      ansible.builtin.package:
+        name: [ "mysql-server" , "python3-pymysql"]  
+        state: present
+        update_cache: yes
+    - name: Make sure a mysql service unit is running        
+      ansible.builtin.systemd:
+        state: started
+        name: mysql
+        enabled: yes 
+    - name: changing the binding address
+      ansible.builtin.template:
+          src: 'mysqldconf.j2'
+          dest: "/etc/mysql/mysql.conf.d/mysqld.cnf"
+          #remote_src: yes
+      notify:
+         - Restart mysql
+    - name: check the plugin of root
+      ansible.builtin.shell:
+        cmd: mysql -Nse "select count(*) from mysql.user where user = 'root' and authentication_string is null" 
+      ignore_errors: yes
+      register: root_password
+    - name: print rootpassword
+      ansible.builtin.debug:
+        var: root_password.stdout
+    - name: Change the authentication plugin of MySQL root user to mysql_native_password
+      ansible.builtin.shell:
+        cmd: "{{ item }}"
+      loop:
+        - mysql -Nse 'UPDATE mysql.user SET plugin="mysql_native_password" WHERE user="root" AND host="localhost"'
+        - mysql -u root -e 'FLUSH PRIVILEGES'
+      ignore_errors: yes
+      when:
+        root_password.stdout == "0" 
+      notify:
+        - Restart mysql  
+    - name: Imagemagick Installation
+      ansible.builtin.package:
+        name: imagemagick
+        update_cache: yes
+    - name: Install Angular.js
+      npm:
+        name: "@angular/cli"
+        global: yes
+        state: present
+    - name: downloading sprutcommerce zip file
+      ansible.builtin.get_url:
+        url: https://picco.digital/v2-api/api/download-link/eyJpdiI6IkpjZ25KZGV0S0plQm95OWpVdlZhelE9PSIsInZhbHVlIjoiY2tpR3lWVTNPM1VZZjZpMHFRUDBTcGh2R0RJU3hWaGZ5VjZQZ1wvRk9wSlk9IiwibWFjIjoiMTI4OTI0OWZkZjExNGY2YWJiZTFmZGMzMGE4MGY4ZDgwODQ3YzY5YzhkOTMwYjcxNWJiZTI1NmIxYjZmZjYwMCJ9
+        dest: /tmp
+        mode: 0750
+    
+
+
+
+  handlers:
+    - name: Restart mysql
+      ansible.builtin.systemd:
+          name: mysql
+          state: restarted
+          daemon_reload: yes
+

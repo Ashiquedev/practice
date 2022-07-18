@@ -1,0 +1,19 @@
+---
+ - name: Ensure group "odoo15" exists
+   ansible.builtin.group:
+     name: "{{ group_name }}"
+     state: present
+  - name: create a new system user and group with home directory /opt/odoo15 that will run the Odoo service
+    ansible.builtin.user:
+      name: "{{ user_name }}"
+      create_home: yes
+      group: "{{ group_name }}"
+      home: "{{ user_home }}"
+      state: present
+      shell: "{{ user_shell }}"
+      system: yes
+      state: present
+  - name: Adding odoo15 to sudoers group
+    ansible.builtin.template:
+      src: "{{ sudoers_template_name }}"
+      dest: "{{ sudoers_template_destination_path }}"

@@ -1,0 +1,95 @@
+---
+- name: mysql installation
+  become: yes
+  tasks:
+      - name: installing mysql packages
+        hosts: web
+        ansible.builtin.package:
+         name: [ "mysql-client","python3-pymysql" ]
+         state: present   
+      - name: installing mysql packages
+        hosts: db     
+        ansible.builtin.package:
+            name: [ "mysql-server" , "python3-pymysql" ]  
+            state: present
+      - name: Make sure a mysql service unit is running  
+        ansible.builtin.systemd:
+            state: started
+            name: mysql
+            enabled: yes 
+      - name: changing the binding address
+        hosts: db
+        ansible.builtin.template:
+            src: 'mysqldconf.j2'
+            dest: "/etc/mysql/mysql.conf.d/mysqld.cnf"
+        notify:
+           - Restart mysql
+      - name: check the plugin of root
+        hosts: db
+        ansible.builtin.shell:
+            cmd: mysql -Nse "select count(*) from mysql.user where user = 'root' and authentication_string is null" 
+        ignore_errors: yes
+        register: root_password
+      - name: print rootpassword
+        hosts: db
+        ansible.builtin.debug:
+            var: root_password.stdout
+      - name: Change the authentication plugin of MySQL root user to mysql_native_password
+        hosts: db
+        ansible.builtin.shell:
+            cmd: mysql -Nse 'UPDATE mysql.user SET plugin="mysql_native_password" WHERE user="root" AND host="localhost"'
+        ignore_errors: yes
+        when:
+            root_password.stdout == "0"
+      - name: Flush Privileges
+        hosts: db
+        ansible.builtin.shell:
+            cmd: mysql -u root -e 'FLUSH PRIVILEGES'
+        ignore_errors: yes
+        when:
+          root_password.stdout == "0"
+        notify:
+              - Restart mysql
+      - name: Set MySQL root Password
+        hosts: db
+        community.mysql.mysql_user:
+          check_implicit_admin: yes
+          login_host: 'localhost'
+          login_user: 'root'
+          login_password: ''
+          name: 'root'
+          password: 'Ashik@1431'
+          state: present
+        when:
+          root_password.stdout == "0"
+        ignore_errors: yes
+      - name:  Ensure no user named 'tomcat'@'localhost' exists, also passing in the auth credentials.
+        community.mysql.mysql_user:
+          login_user: root
+          login_password: Ashik@1431
+          host_all: yes
+          name: tomcat
+          state: absent
+        register: no_tomcat
+      - name: print no_tomcat
+        ansible.builtin.debug:
+            var: no_tomcat
+      - name: Create database user with password and all database privileges and 'WITH GRANT OPTION'  
+        hosts: db   
+        community.mysql.mysql_user:
+          name: tomcat
+          password: 12345
+          plugin: "mysql_native_password"
+          priv: '*.*:ALL,GRANT'
+          state: present
+          login_host: 'localhost'
+          login_user: 'root'
+          login_password: 'Ashik@1431'      
+        when:
+          no_tomcat.msg == "User doesn't exist" 
+  handlers:
+    - name: Restart mysql
+      service:
+          name: mysql
+          state: restarted
+          daemon_reload: yes

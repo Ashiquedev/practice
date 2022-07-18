@@ -1,0 +1,29 @@
+#manual steps
+
+
+#sudo apt update
+#sudo apt-get install openjdk-11-jdk
+
+
+
+#sudo     refers to perform taks as root user ........... so,  'become:yes'
+#apt module in ansible is ansible.builtin.apt
+#apt update refers to  update_cache:yes 
+#job to install .... so  state:present
+#name what to install so openjdk-11-jdk
+
+
+---
+- name: install openjdk 11 java on ubuntu 20.04
+  hosts: all
+  become: yes
+  tasks:
+    - name: install openjdk 11
+      ansible.builtin.apt:       #u can use simply _apt_ also here
+         name: openjdk-11-jdk
+         update_cache: yes
+         state: present
+
+# ansible-playbook -i hosts install-openjdk11-javaonubuntu.yml --syntax-check
+# ansible-playbook -i hosts install-openjdk11-javaonubuntu.yml 
+# run these in bash

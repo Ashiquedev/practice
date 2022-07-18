@@ -1,0 +1,11 @@
+---
+java_package: openjdk-11-jdk
+req_packages_need_to_install: [ "wget","python3-psycopg2","acl","pip" ]
+postgresql_package: [ "postgresql","postgresql-contrib" ]
+python_packages: [ "virtualenv","setuptools" ]
+postgresql_python_dep_package: [ "psycopg2-binary" ]
+db_user: sonar
+db_user_password: sonar
+db_name: sonarqube
+sonarqube_download_url: https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.4.0.54424.zip
+sonar_home: /opt/sonarqube

@@ -1,0 +1,22 @@
+---
+- name: installing nop commerce
+  hosts: all
+  become: yes
+  tasks:  
+    - include_tasks: deb_package_download.yml
+    - include_tasks: mysql_install.yml
+    - include_tasks: nginx_install.yml
+    - include_tasks: nginx_reverse_proxy.yml
+    - include_tasks: nginx_configuration.yml
+  handlers:
+    - name: Restart nopCommerce450
+      service:
+          name: nopCommerce450.service
+          state: restarted
+    - name: Restart Nginx
+      service:
+          name: nginx
+          state: restarted 
+
+
+          

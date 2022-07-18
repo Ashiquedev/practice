@@ -1,0 +1,24 @@
+---
+  - installing_tools_req_to_build: [ "git","acl","python3-pip","pip","build-essential","wget","python3-dev","python3-venv","python3-wheel","libfreetype6-dev","libxml2-dev","libzip-dev","libldap2-dev","libsasl2-dev","python3-setuptools","node-less","libjpeg-dev","zlib1g-dev","libpq-dev","libxslt1-dev","libldap2-dev","libtiff5-dev","libjpeg8-dev","libopenjp2-7-dev","liblcms2-dev","libwebp-dev","libharfbuzz-dev","libfribidi-dev","libxcb1-dev" ]
+  - group_name: odoo15
+  - user_name: odoo15
+  - user_home: /opt/odoo15
+  - user_shell: /bin/bash
+  - wkhtmltopdf_deb_package_url: https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb
+  - odoo_git_repo_url: https://github.com/odoo/odoo.git
+  - odoo_git_repo_destination_dir: /opt/odoo15/odoo
+  - odoo_version: 15.0
+  - odoo_custom_addons_path: /opt/odoo15/odoo-custom-addons
+  - sudoers_template_name: 'sudoers.j2'
+  - sudoers_template_destination_path: /etc/sudoers
+  - odoo_configuration_template_destination_path: /etc/odoo15.conf
+  - odoo_configuration_template_name: 'odoo15_conf.j2'
+  - odoo_service_template_name: 'odoo15_service.j2'
+  - odoo_service_template_destination_path: /etc/systemd/system/odoo15.service
+  - virtualenv_path: /opt/odoo15/venvs/odoo-venv
+  - requirements.txt_path: /opt/odoo15/odoo/requirements.txt
+  - admin_password: admin
+  - postgresql_database_host: localhost
+  - postgresql_database_port: 5432
+  - postgresql_database_password: odoo15
+  - addons_path_in_service_file: "/opt/odoo15/odoo/addons,{{ odoo_custom_addons_path }}"

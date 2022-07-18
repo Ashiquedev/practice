@@ -1,0 +1,13 @@
+---
+- name: restart postgres
+  ansible.builtin.systemd:
+     name: postgresql@12-main
+     state: restarted
+     daemon_reload: yes
+     enabled: yes
+- name: restart sonarqube
+  ansible.builtin.systemd:
+     name: /opt/sonarqube/bin/linux-x86-64/sonar.sh
+     state: restarted
+     daemon_reload: yes
+     enabled: yes

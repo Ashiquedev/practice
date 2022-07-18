@@ -1,0 +1,6 @@
+---
+- name: enabling the odoo service
+  ansible.builtin.systemd:
+    daemon_reload: yes
+    enabled: yes
+    name: odoo15
