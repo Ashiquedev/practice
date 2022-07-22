@@ -38,7 +38,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: db-user
-                  key: Password
+                  key: password
 
 ---
 apiVersion: v1
