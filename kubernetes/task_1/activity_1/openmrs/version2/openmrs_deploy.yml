@@ -48,11 +48,8 @@ metadata:
   labels:
     name: openmrs
 spec:
+  type: LoadBalancer
   ports:
-    - nodePort: 30163
-      port: 8080
-      targetPort: 8080
-      protocol: TCP
+    - port: 8080
   selector:
     app: openmrs
-  type: NodePort
