@@ -1,19 +1,4 @@
 ---
-# Define a 'Service' To Expose mysql to Other Services
-apiVersion: v1
-kind: Service
-metadata:
-  name: mysql  # DNS name
-  labels:
-    app: mysql
-    tier: database
-spec:
-  ports:
-    - port: 3306
-      targetPort: 3306
-
-
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -81,3 +66,17 @@ spec:
         - name: mysql-persistent-storage # Obtaining 'volume' from PVC
           persistentVolumeClaim:
             claimName: mysql-pv-claim
+
+---
+# Define a 'Service' To Expose mysql to Other Services
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql 
+  labels:
+    app: mysql
+    tier: database
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
